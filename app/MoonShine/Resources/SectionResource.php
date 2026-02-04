@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\MoonShine\Resources;
 
+use App\Enums\SectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Section;
 
@@ -12,10 +13,14 @@ use MoonShine\UI\Components\Layout\Box;
 use MoonShine\UI\Fields\ID;
 use MoonShine\Contracts\UI\FieldContract;
 use MoonShine\Contracts\UI\ComponentContract;
+use MoonShine\Laravel\Fields\Relationships\BelongsToMany;
 use MoonShine\UI\Fields\Text;
 use MoonShine\UI\Components\ActionButton;
 
 use MoonShine\Support\ListOf;
+use MoonShine\UI\Components\TableBuilder;
+use MoonShine\UI\Fields\Date;
+use MoonShine\UI\Fields\Enum;
 
 /**
  * @extends ModelResource<Section>
@@ -43,9 +48,14 @@ class SectionResource extends ModelResource
     {
         return [
             ID::make()->sortable(),
+
+            Enum::make('Статус', 'status')->attach(SectionStatus::class)->sortable(),
+
             Text::make('Название', 'name')->required(),
             Text::make('Описание', 'description')->required(),
             Text::make('Полное описание', 'full_description')->required(),
+
+            BelongsToMany::make('Участиники', 'users', resource: UserResource::class)->onlyCount(),
         ];
     }
 
@@ -59,9 +69,16 @@ class SectionResource extends ModelResource
             Box::make([
                 ID::make(),
                 Text::make('Название', 'name'),
+
+                Enum::make('Статус', 'status')->attach(SectionStatus::class),
+
                 Text::make('Описание', 'description'),
                 Text::make('Полное описание', 'full_description'),
-            ])
+
+                Date::make('Дата начала', 'start_date')->required(),
+                Date::make('Дата окончания', 'end_date')->required(),
+
+                ]),
         ];
     }
 
@@ -72,6 +89,8 @@ class SectionResource extends ModelResource
     {
         return [
             ID::make(),
+            Text::make('Название', 'name'),
+            Enum::make('Статус', 'status')->attach(SectionStatus::class),
         ];
     }
 

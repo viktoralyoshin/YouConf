@@ -27,6 +27,7 @@ Route::get('/auth/vk', function () {
 Route::get('vk/auth/callback', [LoginController::class, 'handleProviderCallback'])->name('auth.vk.callback');
 
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\SectionRegistrationController;
 
 // Добавляем рядом с другими auth роутами
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -69,6 +70,7 @@ Route::get('/sections/{section}', [SectionController::class, 'show']);
 Route::middleware(['auth'])->group(function () {
     Route::get('/theses', [ThesisController::class, 'index'])->name('theses.index');
     Route::post('/theses/{id}/status', [ThesisController::class, 'updateStatus'])->name('theses.updateStatus');
+    Route::post('/sections/{section}/register', [SectionRegistrationController::class, 'toggle'])->name('sections.register');
 });
 
 

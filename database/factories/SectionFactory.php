@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\SectionStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Section;
 use Faker\Factory as FakerFactory;
@@ -25,6 +26,7 @@ class SectionFactory extends Factory
 
         return [
             'name' => $faker->sentence(3), // Генерация названия секции
+            'status' => $faker->randomElement(SectionStatus::cases()), //Рандомный статус секции
             'description' => $faker->paragraph, // Краткое описание
             'full_description' => $faker->text(500), // Полное описание
             'start_date' => $faker->date, // Дата начала

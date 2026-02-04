@@ -20,6 +20,7 @@
         "@inertiajs/inertia-vue3": "^0.6.0",
         "@inertiajs/vue3": "^2.0.3",
         "moment-timezone": "^0.5.48",
-        "vue": "^3.5.12"
+        "vue": "^3.5.12",
+        "vue-sonner": "^2.0.9"
     }
 }

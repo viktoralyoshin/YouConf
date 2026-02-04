@@ -229,6 +229,11 @@ class ThesisController extends Controller
     public function create($section_id = null)
     {
         $section = Section::findOrFail($section_id);
+
+        if (!$section->canCreateThesis()) {
+            return back()->with('error', 'Section not on going');
+        }
+
         return inertia('Theses/ThesisFormPage', [
             'section_id' => $section_id,
             'section_name' => $section->name,
