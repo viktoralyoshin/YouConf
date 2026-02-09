@@ -52,99 +52,87 @@ class ThesisController extends Controller
             'status_id' => 'required|exists:statuses,id',
         ]);
 
-        $user = User::findOrFail(Auth::user()->id);
-
+        $user = Auth::user();
         if (!$user->hasRole('expert')) {
             return response()->json(['message' => 'Доступ запрещен.'], 403);
         }
 
         $thesis = Thesis::with(['status', 'user', 'section'])->findOrFail($id);
         $oldStatus = $thesis->status;
-
         $thesis->status_id = $request->status_id;
         $thesis->save();
 
         $newStatus = $thesis->fresh()->status;
 
+        // Если статус "Одобрено" (ID 2)
         if ($newStatus->id == 2) {
             DB::beginTransaction();
             try {
-                // Исправлено: сортируем по end_time, чтобы получить последнее мероприятие
+                $section = $thesis->section;
+
+                // Находим самое последнее мероприятие в этой секции
                 $lastSchedule = Schedule::where('section_id', $thesis->section_id)
-                    ->orderBy('end_time', 'desc') // Изменено с start_time на end_time
+                    ->orderBy('date', 'desc')
+                    ->orderBy('end_time', 'desc')
                     ->first();
 
-                $calculateTime = function ($time, $addMinutes = 0) {
-                    $time = $time ?: '10:00:00';
-                    list($h, $m, $s) = explode(':', $time);
+                $duration = 15; // Длительность в минутах
 
-                    $minutes = (int)$m + $addMinutes;
-                    $hours = (int)$h + floor($minutes / 60);
-                    $minutes = $minutes % 60;
-                    $hours = $hours % 24;
+                if ($lastSchedule) {
+                    $currentDate = Carbon::parse($lastSchedule->date);
+                    $lastEndTime = Carbon::createFromFormat('H:i:s', $lastSchedule->end_time);
 
-                    return sprintf('%02d:%02d:00', $hours, $minutes);
-                };
+                    // Проверяем, поместится ли еще одно выступление до 20:00
+                    $potentialEndTime = $lastEndTime->copy()->addMinutes($duration);
 
-                $newStartTime = $lastSchedule
-                    ? $lastSchedule->end_time // Берем end_time напрямую без преобразования
-                    : '10:00:00';
-
-                // Проверяем, не позже ли 18:00
-                if (explode(':', $newStartTime)[0] >= 20) {
+                    if ($potentialEndTime->hour >= 20) {
+                        // Если не влезает, переносим на следующий день на 10:00
+                        $newDate = $currentDate->addDay();
+                        $newStartTime = '10:00:00';
+                    } else {
+                        $newDate = $currentDate;
+                        $newStartTime = $lastSchedule->end_time;
+                    }
+                } else {
+                    // Если мероприятий еще нет, начинаем с даты начала секции
+                    $newDate = Carbon::parse($section->start_date);
                     $newStartTime = '10:00:00';
                 }
 
-                // Вычисляем время окончания
-                $newEndTime = $calculateTime($newStartTime, 15);
-                Log::info($newStartTime);
+                // Проверка: не выходим ли мы за дату окончания секции
+                $sectionEndDate = Carbon::parse($section->end_date);
+                if ($newDate->gt($sectionEndDate)) {
+                    throw new \Exception('Невозможно назначить время: все дни секции заполнены.');
+                }
 
-                // Создаем запись в расписании
-                DB::insert('INSERT INTO schedules (
-                thesis_id, 
-                section_id, 
-                start_time, 
-                duration, 
-                end_time, 
-                event_type, 
-                title, 
-                description, 
-                created_at, 
-                updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', [
-                    $thesis->id,
-                    $thesis->section_id,
-                    $newStartTime,
-                    15,
-                    $newEndTime,
-                    'thesis',
-                    $thesis->title,
-                    $thesis->description
+                $newEndTime = Carbon::createFromFormat('H:i:s', $newStartTime)->addMinutes($duration)->format('H:i:s');
+
+                // Используем Eloquent вместо сырого SQL, чтобы сработал "booted" с валидацией
+                Schedule::create([
+                    'thesis_id'   => $thesis->id,
+                    'section_id'  => $thesis->section_id,
+                    'date'        => $newDate->format('Y-m-d'),
+                    'start_time'  => $newStartTime,
+                    'duration'    => $duration,
+                    'end_time'    => $newEndTime,
+                    'event_type'  => 'thesis',
+                    'title'       => $thesis->title,
+                    'description' => $thesis->description
                 ]);
 
                 DB::commit();
             } catch (\Exception $e) {
                 DB::rollBack();
                 Log::error('Schedule creation error: ' . $e->getMessage());
-                Log::error('Trace: ' . $e->getTraceAsString());
-                return redirect()->back()->with('error', 'Произошла ошибка при создании расписания');
+                return redirect()->back()->with('error', 'Ошибка распределения времени: ' . $e->getMessage());
             }
         }
 
-        $thesis->user->notify(
-            new ThesisStatusChanged($thesis, $oldStatus, $newStatus)
-        );
+        $thesis->user->notify(new ThesisStatusChanged($thesis, $oldStatus, $newStatus));
 
-        if ($oldStatus->id !== $newStatus->id) {
-            return redirect()->back()->with('success', [
-                'title' => 'Статус изменен',
-                'message' => "Статус выступления '{$thesis->title}' изменен на '{$newStatus}'",
-                'thesis_id' => $thesis->id
-            ]);
-        }
-
-        return redirect('/theses')->with('success', 'Статус заявки успешно обновлён');
+        return redirect()->back()->with('success', 'Статус обновлен и время назначено');
     }
+
     public function apply(Request $request, $section_id)
     {
 

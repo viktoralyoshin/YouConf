@@ -14,6 +14,7 @@ class Schedule extends Model
     protected $fillable = [
         'thesis_id',
         'section_id',
+        'date',
         'start_time',
         'duration',
         'end_time',
@@ -24,6 +25,7 @@ class Schedule extends Model
     ];
 
     protected $casts = [
+        'date' => 'date',
         'start_time' => 'string',
         'end_time' => 'string',
     ];
@@ -74,19 +76,17 @@ class Schedule extends Model
         static::saving(function ($schedule) {
             // Вычисляем время окончания
             $startTime = Carbon::createFromFormat('H:i', $schedule->start_time);
-            $endTime = $startTime->copy()->addMinutes((int)$schedule->duration);
+            $endTime = Carbon::createFromFormat('H:i:s', $schedule->end_time);
 
             // Проверяем, есть ли пересекающиеся расписания для этой секции
-            $conflictingSchedules = Schedule::whereHas('thesis', function ($query) use ($schedule) {
-                $query->where('section_id', $schedule->thesis->section_id); // Проверяем по section_id
-            })
-                ->where(function ($query) use ($startTime, $endTime) {
-                    $query->where(function ($q) use ($startTime, $endTime) {
-                        $q->where('start_time', '<', $endTime->format('H:i'))
-                            ->whereRaw('ADDTIME(start_time, SEC_TO_TIME(duration * 60)) > ?', [$startTime->format('H:i')]);
+            $conflictingSchedules = Schedule::where('section_id', $schedule->section_id)
+                ->where('date', $schedule->date)
+                ->where(function ($query) use ($schedule) {
+                    $query->where(function ($q) use ($schedule) {
+                        $q->where('start_time', '<', $schedule->end_time)
+                        ->where('end_time', '>', $schedule->start_time);
                     });
                 })
-                ->where('id', '!=', $schedule->id) // Исключаем текущее расписание при обновлении
                 ->exists();
 
             if ($conflictingSchedules) {
