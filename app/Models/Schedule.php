@@ -74,7 +74,7 @@ class Schedule extends Model
             }
         });
         static::saving(function ($schedule) {
-            $startTime = Carbon::createFromFormat('H:i', $schedule->start_time);
+            $startTime = Carbon::parse($schedule->start_time);
             $endTime = $startTime->copy()->addMinutes((int)$schedule->duration);
 
             $conflictingSchedules = Schedule::where('section_id', $schedule->section_id)

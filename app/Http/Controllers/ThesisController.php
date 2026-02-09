@@ -78,7 +78,7 @@ class ThesisController extends Controller
 
                 if ($lastSchedule) {
                     $currentDate = Carbon::parse($lastSchedule->date);
-                    $lastEndTime = Carbon::createFromFormat('H:i:s', $lastSchedule->end_time);
+                    $lastEndTime = Carbon::parse($lastSchedule->end_time);
 
                     $potentialEndTime = $lastEndTime->copy()->addMinutes($duration);
 
@@ -99,7 +99,7 @@ class ThesisController extends Controller
                     throw new \Exception('Невозможно назначить время: все дни секции заполнены.');
                 }
 
-                $newEndTime = Carbon::createFromFormat('H:i:s', $newStartTime)->addMinutes($duration)->format('H:i:s');
+                $newEndTime = Carbon::parse($newStartTime)->addMinutes($duration)->format('H:i');
 
                 Schedule::create([
                     'thesis_id'   => $thesis->id,

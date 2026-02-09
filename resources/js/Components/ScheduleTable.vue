@@ -1,121 +1,101 @@
 <template>
-  <!-- Общая сетка для времени и событий -->
-  <div
-    className="col-start-1 col-end-5 gap-4 grid grid-rows-[repeat(48,minmax(0,1fr))]"
-    :style="{ gridTemplateColumns: `50px repeat(${sections.length}, 1fr)` }"
-  >
-    <!-- Заголовки категорий -->
-    <div className="col-start-1 col-end-2"></div>
-    <div
-      v-for="(section, sectionIndex) in sections"
-      :key="sectionIndex"
-      className="text-center font-bold p-2"
-    >
-      <Link
-        :href="'/schedules/section/' + section.id"
-        class="flex items-center"
-      >
-        {{ section.name }}
-      </Link>
-    </div>
-    <!-- Время -->
-    <div
-      v-for="(time, index) in times"
-      :key="index"
-      className="text-center pr-2"
-      :style="{ gridRow: `${index + 2} / span 1` }"
-    >
-      {{ time }}
-    </div>
+    <div class="relative space-y-4">
+        <div class="absolute left-[39px] top-2 bottom-2 w-px bg-gray-100"></div>
 
-    <!-- События -->
-    <div
-      v-for="event in currentEvents"
-      :key="event.name"
-      :className="`bg-blue-500 p-2 rounded-lg text-white`"
-      :style="{
-        gridColumn: `${
-          sections.findIndex((section) => section.id === event.section_id) + 2
-        }`,
-        gridRow: `${event.start + 1} / ${event.end + 2}`,
-      }"
-    >
-      <h3 className="text-lg font-bold mb-1">
-        <!-- Заголовок для темы выступления -->
-        {{ event.thesis_title }}
-      </h3>
-      <p className="text-sm">
-        <!-- Параграф для имени докладчика -->
-        {{ event.user.last_name }} {{ event.user.first_name }}
-      </p>
+        <div
+            v-for="(event, index) in sortedEvents"
+            :key="index"
+            class="relative flex items-start group"
+        >
+            <div
+                class="flex flex-col items-center justify-start min-w-[80px] pt-5"
+            >
+                <span
+                    class="text-sm font-bold text-gray-900 bg-white z-10 px-1"
+                >
+                    {{ event.start_time }}
+                </span>
+                <span
+                    class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter"
+                >
+                    {{ calculateEndTime(event.start_time, event.duration) }}
+                </span>
+            </div>
+            <div class="relative mt-6 mr-6 z-10">
+                <div
+                    class="w-2.5 h-2.5 rounded-full bg-white border-2 border-black group-hover:bg-black transition-colors duration-300"
+                ></div>
+            </div>
+            <div
+                class="flex-1 bg-white border border-gray-100 p-6 rounded-[2rem] shadow-sm hover:border-gray-200 transition-all duration-300 mb-2"
+            >
+                <div
+                    class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                    <div class="space-y-1">
+                        <h3
+                            class="text-lg font-bold text-[#1a1a1a] leading-tight"
+                        >
+                            {{ event.thesis_title }}
+                        </h3>
+                        <div class="flex items-center text-gray-500">
+                            <div
+                                class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mr-2"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-3 w-3 text-gray-400"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-semibold">
+                                {{ event.user.last_name }}
+                                {{ event.user.first_name }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span
+                            class="px-4 py-1.5 bg-gray-50 text-gray-400 text-[10px] font-bold uppercase rounded-full tracking-widest"
+                        >
+                            {{ event.duration }} мин
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
-import { Link } from '@inertiajs/inertia-vue3'
 export default {
-  name: 'ScheduleTable',
-  components: {
-    Link,
-  },
-  props: {
-    sections: Array,
-    events: Array,
-  },
-  data() {
-    return {
-      times: this.generateTimes(),
-    }
-  },
-  methods: {
-    generateTimes() {
-      const times = []
-      for (let hour = 8; hour <= 19; hour++) {
-        for (let minute = 0; minute < 60; minute += 15) {
-          const time = `${hour
-            .toString()
-            .padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-          times.push(time)
-        }
-      }
-      return times
+    name: "ScheduleTable",
+    props: {
+        events: Array,
     },
-    timeToRowIndex(time) {
-      // Преобразует время в номер строки
-      const [hour, minute] = time.split(':').map(Number)
-      const totalMinutes = (hour - 8) * 60 + minute // 8:00 — начало отсчета
-      return Math.floor(totalMinutes / 15) + 1 // +1, так как строки начинаются с 1
+    methods: {
+        calculateEndTime(startTime, duration) {
+            if (!startTime || !duration) return null;
+            const [hours, minutes] = startTime.split(":").map(Number);
+            const date = new Date();
+            date.setHours(hours, minutes, 0, 0);
+            const endDate = new Date(date.getTime() + duration * 60000);
+            return `${endDate.getHours().toString().padStart(2, "0")}:${endDate.getMinutes().toString().padStart(2, "0")}`;
+        },
     },
-    calculateEndTime(startTime, duration) {
-      if (!startTime || !duration) return null
-
-      const [hours, minutes] = startTime.split(':').map(Number)
-      const startDate = new Date()
-      startDate.setHours(hours, minutes, 0, 0)
-
-      const endDate = new Date(startDate.getTime() + duration * 60000)
-      return `${endDate
-        .getHours()
-        .toString()
-        .padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`
+    computed: {
+        sortedEvents() {
+            return [...this.events].sort((a, b) =>
+                a.start_time.localeCompare(b.start_time),
+            );
+        },
     },
-  },
-  computed: {
-    currentEvents() {
-      return this.events.map((event) => {
-        // Если end_time отсутствует, вычисляем его из start_time + duration
-        const endTime =
-          event.end_time ||
-          this.calculateEndTime(event.start_time, event.duration)
-
-        return {
-          ...event,
-          start: this.timeToRowIndex(event.start_time),
-          end: this.timeToRowIndex(endTime),
-        }
-      })
-    },
-  },
-}
+};
 </script>
