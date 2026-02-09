@@ -1,17 +1,36 @@
 <template>
-  <div
-    class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
-  >
-    <div
-      class="bg-white p-8 rounded-lg shadow-md w-96 flex flex-col items-center"
-    >
-      <slot></slot>
+    <div class="min-h-screen flex flex-col bg-white">
+        <header
+            class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50"
+        >
+            <div
+                class="container mx-auto px-6 h-16 flex justify-between items-center"
+            >
+                <Link
+                    href="/"
+                    class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+                >
+                    <div class="bg-black p-1.5 rounded-lg">
+                        <img src="@img/logo.png" alt="Logo" class="h-6 w-6" />
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-gray-900"
+                        >Удивительный Мир</span
+                    >
+                </Link>
+            </div>
+        </header>
+        <main class="flex-grow flex items-center justify-center py-12 px-4">
+            <div
+                class="w-full max-w-[350px] animate-in fade-in slide-in-from-bottom-4 duration-700"
+            >
+                <slot />
+            </div>
+        </main>
     </div>
-  </div>
 </template>
 
 <script>
 export default {
-  name: 'AuthLayout',
-}
+    name: "AuthLayout",
+};
 </script>
