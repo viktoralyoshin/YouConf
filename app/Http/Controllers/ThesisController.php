@@ -64,29 +64,25 @@ class ThesisController extends Controller
 
         $newStatus = $thesis->fresh()->status;
 
-        // Если статус "Одобрено" (ID 2)
         if ($newStatus->id == 2) {
             DB::beginTransaction();
             try {
                 $section = $thesis->section;
 
-                // Находим самое последнее мероприятие в этой секции
                 $lastSchedule = Schedule::where('section_id', $thesis->section_id)
                     ->orderBy('date', 'desc')
                     ->orderBy('end_time', 'desc')
                     ->first();
 
-                $duration = 15; // Длительность в минутах
+                $duration = 15;
 
                 if ($lastSchedule) {
                     $currentDate = Carbon::parse($lastSchedule->date);
                     $lastEndTime = Carbon::createFromFormat('H:i:s', $lastSchedule->end_time);
 
-                    // Проверяем, поместится ли еще одно выступление до 20:00
                     $potentialEndTime = $lastEndTime->copy()->addMinutes($duration);
 
                     if ($potentialEndTime->hour >= 20) {
-                        // Если не влезает, переносим на следующий день на 10:00
                         $newDate = $currentDate->addDay();
                         $newStartTime = '10:00:00';
                     } else {
@@ -94,12 +90,10 @@ class ThesisController extends Controller
                         $newStartTime = $lastSchedule->end_time;
                     }
                 } else {
-                    // Если мероприятий еще нет, начинаем с даты начала секции
                     $newDate = Carbon::parse($section->start_date);
                     $newStartTime = '10:00:00';
                 }
 
-                // Проверка: не выходим ли мы за дату окончания секции
                 $sectionEndDate = Carbon::parse($section->end_date);
                 if ($newDate->gt($sectionEndDate)) {
                     throw new \Exception('Невозможно назначить время: все дни секции заполнены.');
@@ -107,7 +101,6 @@ class ThesisController extends Controller
 
                 $newEndTime = Carbon::createFromFormat('H:i:s', $newStartTime)->addMinutes($duration)->format('H:i:s');
 
-                // Используем Eloquent вместо сырого SQL, чтобы сработал "booted" с валидацией
                 Schedule::create([
                     'thesis_id'   => $thesis->id,
                     'section_id'  => $thesis->section_id,
@@ -130,7 +123,7 @@ class ThesisController extends Controller
 
         $thesis->user->notify(new ThesisStatusChanged($thesis, $oldStatus, $newStatus));
 
-        return redirect()->back()->with('success', 'Статус обновлен и время назначено');
+        return redirect()->back()->with('success', 'Статус обновлен');
     }
 
     public function apply(Request $request, $section_id)

@@ -20,7 +20,7 @@ class ConferenceSessionSeeder extends Seeder
             return;
         }
 
-        $theses = Thesis::where('status_id', 2)->get();
+        $theses = Thesis::with('section')->where('status_id', 2)->get();
         $locations = Location::all();
 
         $durations = [15, 30, 45, 60];
@@ -29,14 +29,22 @@ class ConferenceSessionSeeder extends Seeder
         foreach ($theses as $thesis) {
             $location = $locations->random();
 
+            $section = $thesis->section;
+
+            $startDate = Carbon::parse($section->start_date);
+            $endDate = Carbon::parse($section->end_date);
+            $daysDiff = $startDate->diffInDays($endDate);
+
             // Генерация времени начала и продолжительности
             $start_time = null;
             $duration = null;
             $end_time = null;
+            $date = null;
             $attempts = 0; // Счётчик попыток
             $maxAttempts = 100; // Максимальное количество попыток
 
             do {
+                $date = $startDate->copy()->addDays(rand(0, $daysDiff));
                 // Генерируем случайное время начала с 8:00 до 20:00 с шагом 15 минут
                 // $start_time = Carbon::createFromTime(rand(8, 20), rand(0, 3) * 15);
                 $start_time = Carbon::createFromTime(rand(8, 17), rand(0, 3) * 15);
@@ -73,6 +81,7 @@ class ConferenceSessionSeeder extends Seeder
                 Schedule::create([
                     'thesis_id' => $thesis->id,
                     'start_time' => $start_time->format('H:i'),
+                    'date'        => $date->format('Y-m-d'),
                     'duration' => $duration,
                     'end_time' => $end_time->format('H:i'),
                     'location_id' => $location->id,

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
+
 
 class SectionController extends Controller
 {
@@ -40,9 +42,32 @@ class SectionController extends Controller
             'is_joined' => $section->hasParticipant($user),
         ]);
 
+        $schedules = Schedule::with(['thesis.user'])
+            ->where('section_id', $section->id)
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
+
+        $groupedSchedules = $schedules->map(function ($schedule) {
+            return [
+                'id' => $schedule->id,
+                'date' => $schedule->date ? $schedule->date->format('Y-m-d') : null,
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+                'duration' => $schedule->duration,
+                'thesis_title' => $schedule->thesis ? $schedule->thesis->title : $schedule->title,
+                'section_id' => $schedule->section_id,
+                'user' => $schedule->thesis ? [
+                    'first_name' => $schedule->thesis->user->first_name,
+                    'last_name' => $schedule->thesis->user->last_name,
+                ] : null,
+            ];
+        })->groupBy('date');
+
         return Inertia::render('Sections/Show', [
             'section' => $sectionData,
             'user' => $user,
+            'schedules' => $groupedSchedules
         ]);
     }
 }

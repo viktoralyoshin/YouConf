@@ -74,17 +74,15 @@ class Schedule extends Model
             }
         });
         static::saving(function ($schedule) {
-            // Вычисляем время окончания
             $startTime = Carbon::createFromFormat('H:i', $schedule->start_time);
-            $endTime = Carbon::createFromFormat('H:i:s', $schedule->end_time);
+            $endTime = $startTime->copy()->addMinutes((int)$schedule->duration);
 
-            // Проверяем, есть ли пересекающиеся расписания для этой секции
             $conflictingSchedules = Schedule::where('section_id', $schedule->section_id)
                 ->where('date', $schedule->date)
                 ->where(function ($query) use ($schedule) {
                     $query->where(function ($q) use ($schedule) {
                         $q->where('start_time', '<', $schedule->end_time)
-                        ->where('end_time', '>', $schedule->start_time);
+                            ->where('end_time', '>', $schedule->start_time);
                     });
                 })
                 ->exists();

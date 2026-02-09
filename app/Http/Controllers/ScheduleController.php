@@ -40,43 +40,33 @@ class ScheduleController extends Controller
 
     public function getThesesBySection($sectionId)
     {
-        // Получаем все расписания, относящиеся к заявкам выбранной секции
-        $schedules = Schedule::with(['thesis.user', 'thesis.section'])
-            ->whereHas('thesis', function ($query) use ($sectionId) {
-                $query->where('section_id', $sectionId);
-            })
+        $section = Section::findOrFail($sectionId);
+
+        $schedules = Schedule::with(['thesis.user'])
+            ->where('section_id', $sectionId)
+            ->orderBy('date')
             ->orderBy('start_time')
             ->get();
 
-        // Форматируем данные для ответа
-        $formattedSchedules = $schedules->map(function ($schedule) {
+        $groupedSchedules = $schedules->map(function ($schedule) {
             return [
+                'id' => $schedule->id,
+                'date' => $schedule->date->format('Y-m-d'),
                 'start_time' => $schedule->start_time,
                 'end_time' => $schedule->end_time,
-                'location' => $schedule->location,
-                'title' => $schedule->thesis->title,
-                'description' => $schedule->thesis->description,
+                'duration' => $schedule->duration,
+                'thesis_title' => $schedule->thesis->title,
+                'section_id' => $schedule->section_id,
                 'user' => [
                     'first_name' => $schedule->thesis->user->first_name,
                     'last_name' => $schedule->thesis->user->last_name,
                 ],
-                'attachments' => $schedule->thesis->media->map(function ($media) {
-                    return [
-                        'id' => $media->id,
-                        'name' => $media->file_name,
-                        'original_url' => $media->original_url,
-                        'mime_type' => $media->mime_type,
-                        'size' => $media->size,
-                    ];
-                }),
             ];
-        });
+        })->groupBy('date');
 
-        $section = Section::findOrFail($sectionId);
-
-        return Inertia::render('Schedules/Index', [
-            'theses' => $formattedSchedules,
-            'sectionName' => $section->name,
+        return Inertia::render('Schedules/SectionSchedule', [
+            'section' => $section,
+            'schedules' => $groupedSchedules,
         ]);
     }
 }
