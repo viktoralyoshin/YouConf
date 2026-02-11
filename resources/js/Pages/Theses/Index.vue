@@ -1,13 +1,16 @@
 <template>
-  <div class="p-4">
-    <div class="flex justify-between mb-4">
-      <div>
-        <label for="statusFilter" class="mr-2">Фильтр по статусу:</label>
+  <div class="max-w-7xl mx-auto py-10 px-4">
+    <div class="mb-8">
+      <h1 class="text-4xl font-extrabold text-[#1a1a1a] mb-6">Тезисы</h1>
+
+      <div class="flex items-center gap-3">
+        <label for="statusFilter" class="text-sm font-bold text-gray-700">
+          Фильтр по статусу:
+        </label>
         <select
           v-model="selectedStatus"
-          @change="filterTheses"
           id="statusFilter"
-          class="border rounded p-1"
+          class="px-4 py-2 border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-semibold"
         >
           <option value="">Все статусы</option>
           <option
@@ -26,6 +29,7 @@
       :statuses="statuses"
       :role="$page.props.role"
       @status-updated="handleStatusUpdated"
+      @sort="toggleSort"
     />
   </div>
 </template>
@@ -46,14 +50,37 @@ export default {
   data() {
     return {
       selectedStatus: '',
+      sortBy: 'created_at',
+      sortOrder: 'desc',
     }
   },
   computed: {
     filteredTheses() {
-      return this.theses.filter((thesis) => {
+      let filtered = this.theses.filter((thesis) => {
         return (
           this.selectedStatus === '' || thesis.status_id === this.selectedStatus
         )
+      })
+
+      // Сортировка
+      return filtered.sort((a, b) => {
+        let valueA = a[this.sortBy]
+        let valueB = b[this.sortBy]
+
+        if (this.sortBy === 'title' || this.sortBy === 'section.name') {
+          valueA = this.sortBy === 'section.name' ? a.section.name : valueA
+          valueB = this.sortBy === 'section.name' ? b.section.name : valueB
+          return this.sortOrder === 'asc'
+            ? valueA.localeCompare(valueB)
+            : valueB.localeCompare(valueA)
+        }
+
+        if (this.sortBy === 'created_at') {
+          valueA = new Date(valueA)
+          valueB = new Date(valueB)
+        }
+
+        return this.sortOrder === 'asc' ? valueA - valueB : valueB - valueA
       })
     },
   },
@@ -69,6 +96,14 @@ export default {
         this.$emit('status-updated')
       } catch (error) {
         console.error('Ошибка при обновлении статуса:', error)
+      }
+    },
+    toggleSort(field) {
+      if (this.sortBy === field) {
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+      } else {
+        this.sortBy = field
+        this.sortOrder = 'asc'
       }
     },
   },

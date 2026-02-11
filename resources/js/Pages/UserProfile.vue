@@ -1,33 +1,42 @@
 <template>
-  <div class="p-6 bg-gray-100 min-h-screen">
-    <div class="bg-white p-6 rounded-lg mb-6 shadow-md">
-      <h1 class="text-2xl font-bold mb-4 text-gray-800">
-        Информация о пользователе
-      </h1>
-      <div class="space-y-3">
-        <p class="text-gray-700">
-          <strong class="font-semibold">Имя:</strong>
+  <div class="max-w-4xl mx-auto py-10 px-4">
+    <div
+      class="bg-white border border-gray-100 p-8 md:p-12 rounded-[2.5rem] shadow-sm mb-8"
+    >
+      <div class="mb-10">
+        <h1
+          class="text-4xl md:text-5xl font-extrabold tracking-tight text-[#1a1a1a]"
+        >
+          Информация о пользователе
+        </h1>
+      </div>
+
+      <div class="mb-12 space-y-4">
+        <p class="text-lg md:text-xl text-gray-500">
+          <strong class="font-bold text-gray-700">Имя:</strong>
           {{ user_data.first_name }}
         </p>
-        <p class="text-gray-700">
-          <strong class="font-semibold">Фамилия:</strong>
+        <p class="text-lg md:text-xl text-gray-500">
+          <strong class="font-bold text-gray-700">Фамилия:</strong>
           {{ user_data.last_name }}
         </p>
-        <p v-if="user_data.email" class="text-gray-700">
-          <strong class="font-semibold">Email:</strong>
+        <p v-if="user_data.email" class="text-lg md:text-xl text-gray-500">
+          <strong class="font-bold text-gray-700">Email:</strong>
           {{ user_data.email }}
         </p>
       </div>
-      <div class="mt-6">
+
+      <div class="pt-10 border-t border-gray-50">
         <Link
           :disabled="isDisabled"
           :href="`/user/${user_data.id}/edit`"
-          class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200"
+          class="inline-block px-10 py-4 bg-green-600 text-white rounded-full hover:bg-green-700 shadow-lg shadow-green-600/20 transition-all duration-300 font-bold text-base"
         >
-          Редактировать
+          Редактировать профиль
         </Link>
       </div>
     </div>
+
     <ThesesTable
       v-if="$page.props?.role !== 'expert'"
       :theses="theses"
