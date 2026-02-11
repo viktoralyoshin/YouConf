@@ -1,204 +1,179 @@
 <template>
-  <div class="max-w-md w-full space-y-8">
-    <div>
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        Создать аккаунт
-      </h2>
+    <div class="flex flex-col space-y-2 text-center mb-4">
+        <h1 class="text-2xl font-semibold tracking-tight text-gray-900">
+            Создать аккаунт
+        </h1>
+        <p class="text-sm text-gray-500">Введите ваши данные для регистрации</p>
     </div>
-    <form class="mt-8 space-y-6" @submit.prevent="submit">
-      <div class="rounded-md shadow-sm space-y-4">
-        <div>
-          <label
-            for="first_name"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Имя
-          </label>
-          <input
-            id="first_name"
-            v-model="form.first_name"
-            type="text"
-            required
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p v-if="errors.first_name" class="mt-2 text-sm text-red-600">
-            {{ getErrorMessage(errors.first_name) }}
-          </p>
-        </div>
 
-        <div>
-          <label
-            for="last_name"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Фамилия
-          </label>
-          <input
-            id="last_name"
-            v-model="form.last_name"
-            type="text"
-            required
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p v-if="errors.last_name" class="mt-2 text-sm text-red-600">
-            {{ getErrorMessage(errors.last_name) }}
-          </p>
-        </div>
+    <div class="grid gap-6">
+        <form @submit.prevent="submit" class="space-y-4">
+            <div class="grid gap-2">
+                <div class="grid gap-1">
+                    <label class="sr-only" for="first_name">Имя</label>
+                    <input
+                        id="first_name"
+                        v-model="form.first_name"
+                        placeholder="Имя"
+                        type="text"
+                        required
+                        class="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        :class="{ 'border-red-500': errors.first_name }"
+                    />
+                    <p
+                        v-if="errors.first_name"
+                        class="text-[0.8rem] font-medium text-red-500"
+                    >
+                        {{ errors.first_name[0] }}
+                    </p>
+                </div>
 
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            id="email"
-            v-model="form.email"
-            type="email"
-            required
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p v-if="errors.email" class="mt-2 text-sm text-red-600">
-            {{ getErrorMessage(errors.email) }}
-          </p>
-        </div>
+                <div class="grid gap-1">
+                    <label class="sr-only" for="last_name">Фамилия</label>
+                    <input
+                        id="last_name"
+                        v-model="form.last_name"
+                        placeholder="Фамилия"
+                        type="text"
+                        required
+                        class="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        :class="{ 'border-red-500': errors.last_name }"
+                    />
+                    <p
+                        v-if="errors.last_name"
+                        class="text-[0.8rem] font-medium text-red-500"
+                    >
+                        {{ errors.last_name[0] }}
+                    </p>
+                </div>
 
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">
-            Пароль
-          </label>
-          <input
-            id="password"
-            v-model="form.password"
-            type="password"
-            required
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p v-if="errors.password" class="mt-2 text-sm text-red-600">
-            {{ getErrorMessage(errors.password) }}
-          </p>
-        </div>
+                <div class="grid gap-1">
+                    <label class="sr-only" for="email">Email</label>
+                    <input
+                        id="email"
+                        v-model="form.email"
+                        placeholder="name@example.com"
+                        type="email"
+                        required
+                        class="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        :class="{ 'border-red-500': errors.email }"
+                    />
+                    <p
+                        v-if="errors.email"
+                        class="text-[0.8rem] font-medium text-red-500"
+                    >
+                        {{ errors.email[0] }}
+                    </p>
+                </div>
 
-        <div>
-          <label
-            for="password_confirmation"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Подтвердите пароль
-          </label>
-          <input
-            id="password_confirmation"
-            v-model="form.password_confirmation"
-            type="password"
-            required
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-      </div>
+                <div class="grid gap-1">
+                    <label class="sr-only" for="password">Пароль</label>
+                    <input
+                        id="password"
+                        v-model="form.password"
+                        placeholder="Пароль"
+                        type="password"
+                        required
+                        class="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        :class="{ 'border-red-500': errors.password }"
+                    />
+                    <p
+                        v-if="errors.password"
+                        class="text-[0.8rem] font-medium text-red-500"
+                    >
+                        {{ errors.password[0] }}
+                    </p>
+                </div>
 
-      <div>
-        <button
-          type="submit"
-          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          :disabled="processing"
-        >
-          <span v-if="processing">Регистрация...</span>
-          <span v-else>Зарегистрироваться</span>
-        </button>
-      </div>
+                <div class="grid gap-1">
+                    <label class="sr-only" for="password_confirmation"
+                        >Подтвердите пароль</label
+                    >
+                    <input
+                        id="password_confirmation"
+                        v-model="form.password_confirmation"
+                        placeholder="Подтвердите пароль"
+                        type="password"
+                        required
+                        class="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                </div>
+            </div>
 
-      <div class="text-center">
-        <Link
-          :href="'/login'"
-          class="text-sm text-blue-600 hover:text-blue-500"
-        >
-          Уже есть аккаунт? Войдите
-        </Link>
-      </div>
-      <div class="mt-6">
+            <button
+                type="submit"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-black text-white hover:bg-black/90 h-10 py-2 px-4 w-full"
+                :disabled="form.processing"
+            >
+                <span v-if="form.processing">Регистрация...</span>
+                <span v-else>Зарегистрироваться</span>
+            </button>
+        </form>
+
         <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-gray-50 text-gray-500">
-              Или войдите через
-            </span>
-          </div>
+            <div class="absolute inset-0 flex items-center">
+                <span class="w-full border-t border-gray-200"></span>
+            </div>
+            <div class="relative flex justify-center text-xs uppercase">
+                <span class="bg-white px-2 text-gray-500">Или</span>
+            </div>
         </div>
 
-        <div class="mt-6">
-          <VkAuthButton />
+        <div class="grid gap-2">
+            <VkAuthButton class="w-full" />
         </div>
-      </div>
-    </form>
-  </div>
+
+        <div class="text-center">
+            <Link
+                href="/login"
+                class="text-sm font-medium hover:underline underline-offset-4"
+            >
+                Уже есть аккаунт? Войдите
+            </Link>
+        </div>
+    </div>
 </template>
 
 <script>
-import { useForm } from '@inertiajs/inertia-vue3'
-import { Inertia } from '@inertiajs/inertia'
-import VkAuthButton from '@/Components/VkAuthButton.vue'
-import AuthLayout from '@/Common/AuthLayout.vue'
-import { Link } from '@inertiajs/inertia-vue3'
+import { useForm } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
+import VkAuthButton from "@/Components/VkAuthButton.vue";
+import { Link } from "@inertiajs/inertia-vue3";
+import AuthLayout from "@/Common/AuthLayout.vue";
 
 export default {
-  setup() {
-    const form = useForm({
-      first_name: '',
-      last_name: '',
-      email: '',
-      password: '',
-      password_confirmation: '',
-    })
-
-    const submit = () => {
-      Inertia.post('/register', form, {
-        onSuccess: (page) => {
-          console.log('page')
-          // Если есть ошибки, они будут автоматически обновлены в form.errors
-          // Если нет ошибок, вы можете сбросить форму или выполнить другие действия
-          if (!page.props.errors) {
-            form.reset() // Сброс формы, если нет ошибок
-          }
-        },
-        onError: (errors) => {
-          // Ошибки будут автоматически обновлены в form.errors
-          console.log(errors) // Вывод ошибок в консоль для отладки
-          form.setError(errors)
-        },
-        //onFinish: () => form.reset('password', 'password_confirmation'),
-      })
-    }
-
-    const getErrorMessage = (errorArray) => {
-      if (Array.isArray(errorArray)) {
-        return errorArray.join(', ') // Объединяем массив ошибок в строку
-      }
-      return errorArray // Если это не массив, возвращаем его как есть
-    }
-
-    return { form, submit, getErrorMessage }
-  },
-  props: {
-    errors: Object,
-    message: String,
-    status: String,
-    user_data: Object,
-  },
-  components: {
-    VkAuthButton,
-    Link,
-  },
-  meta: {
-    layout: AuthLayout,
-  },
-  computed: {
-    processing() {
-      return this.form.processing
+    props: {
+        errors: Object,
+        message: String,
+        status: String,
+        user_data: Object,
     },
-    errors() {
-      console.log(this.form)
-      return this.form.errors
+    components: {
+        VkAuthButton,
+        Link,
     },
-  },
-}
+    meta: {
+        layout: AuthLayout,
+    },
+    setup(props) {
+        const form = useForm({
+            first_name: "",
+            last_name: "",
+            email: "",
+            password: "",
+            password_confirmation: "",
+        });
+
+        const submit = () => {
+            Inertia.post("/register", form, {
+                onSuccess: (page) => {
+                    if (!page.props.errors) form.reset();
+                },
+                onError: (errors) => form.setError(errors),
+            });
+        };
+
+        return { form, submit };
+    },
+};
 </script>
