@@ -1,7 +1,7 @@
 <template>
-  <div class="p-6">
-    <div class="bg-blue-100 p-6 rounded-lg mb-6 shadow-md">
-      <h1 class="text-2xl font-bold mb-4 text-blue-800">
+  <div class="p-6 bg-gray-100 min-h-screen">
+    <div class="bg-white p-6 rounded-lg mb-6 shadow-md">
+      <h1 class="text-2xl font-bold mb-4 text-gray-800">
         Информация о пользователе
       </h1>
       <div class="space-y-3">
@@ -17,7 +17,8 @@
           <strong class="font-semibold">Email:</strong>
           {{ user_data.email }}
         </p>
-        <p class="mb-8"></p>
+      </div>
+      <div class="mt-6">
         <Link
           :disabled="isDisabled"
           :href="`/user/${user_data.id}/edit`"
